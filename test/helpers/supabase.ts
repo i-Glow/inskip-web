@@ -9,7 +9,7 @@ export interface QueryResult {
 export function queryBuilder(result: QueryResult = {}) {
   const res = { data: null, error: null, ...result }
   const b: Record<string, unknown> = {}
-  for (const m of ['select', 'insert', 'update', 'delete', 'eq', 'order', 'single']) {
+  for (const m of ['select', 'insert', 'update', 'delete', 'eq', 'in', 'order', 'single']) {
     b[m] = vi.fn(() => b)
   }
   b.then = (resolve: (v: typeof res) => unknown, reject?: (e: unknown) => unknown) =>
