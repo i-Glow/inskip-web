@@ -60,7 +60,7 @@ jobs:
       - name: Link project
         run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
       - name: Push migrations
-        run: npx supabase db push
+        run: npx supabase db push --remote
       - name: Deploy Edge Function
         run: npx supabase functions deploy score-idea --project-ref "$SUPABASE_PROJECT_REF" --use-api
 
