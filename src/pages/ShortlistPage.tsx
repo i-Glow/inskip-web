@@ -61,9 +61,12 @@ export default function ShortlistPage() {
     toggleShortlist.mutate(idea, { onError: (e) => toast.show(e.message, 'error') })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 md:flex md:min-h-0 md:flex-1 md:flex-col">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
+          <Link to="/challenges" className="block text-sm text-indigo-700 hover:underline">
+            ← Mes challenges
+          </Link>
           <Link to={`/challenges/${id}/ideas`} className="text-sm text-indigo-700 hover:underline">
             Retour aux idées
           </Link>
@@ -110,12 +113,14 @@ export default function ShortlistPage() {
             text="Utilisez « Suggérer » ou ajoutez des idées depuis leur fiche."
           />
         ) : (
-          <ShortlistList
-            challengeId={id!}
-            items={shortlisted}
-            onReorder={onReorder}
-            onRemove={onRemove}
-          />
+          <div className="min-h-[24rem] md:min-h-0 md:flex-1 md:overflow-auto">
+            <ShortlistList
+              challengeId={id!}
+              items={shortlisted}
+              onReorder={onReorder}
+              onRemove={onRemove}
+            />
+          </div>
         ))}
 
       {adding && all && (

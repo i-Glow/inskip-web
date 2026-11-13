@@ -23,6 +23,11 @@ describe('Header', () => {
     expect(screen.getByText('ana@example.com')).toBeInTheDocument()
   })
 
+  it('links the app name to /challenges', () => {
+    renderWithProviders(ui(), { route: '/challenges', auth: authFor() })
+    expect(screen.getByRole('link', { name: 'INSKIP' })).toHaveAttribute('href', '/challenges')
+  })
+
   it('signs out then goes to /login', async () => {
     const signOut = vi.fn().mockResolvedValue(undefined)
     renderWithProviders(ui(), { route: '/challenges', auth: authFor('ana@example.com', { signOut }) })

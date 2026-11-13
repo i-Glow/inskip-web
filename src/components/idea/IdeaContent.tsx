@@ -23,7 +23,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 export default function IdeaContent({ idea }: { idea: Tables<'ideas'> }) {
   const author = [idea.author_first_name, idea.author_last_name].filter(Boolean).join(' ')
   return (
-    <article className="space-y-4">
+    <article className="min-w-0 space-y-4">
       <header>
         <p className="text-sm text-gray-500">{idea.external_id}</p>
         <h1 className="text-xl font-semibold">{idea.title}</h1>

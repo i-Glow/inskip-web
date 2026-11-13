@@ -61,6 +61,11 @@ describe('ShortlistPage', () => {
     expect(suggest).toHaveBeenCalledWith({ challengeId: 'c1', target: 8 }, expect.anything())
   })
 
+  it('links back to the challenges list', () => {
+    renderPage()
+    expect(screen.getByRole('link', { name: '← Mes challenges' })).toHaveAttribute('href', '/challenges')
+  })
+
   it('shows counter and unreviewed warning', () => {
     ideas = shortlisted(7, 2)
     renderPage()

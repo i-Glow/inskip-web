@@ -41,6 +41,11 @@ describe('IdeasPage', () => {
     expect(screen.getByRole('link', { name: 'Voir la shortlist' })).toHaveAttribute('href', '/challenges/c1/shortlist')
   })
 
+  it('links back to the challenges list', async () => {
+    renderPage()
+    expect(await screen.findByRole('link', { name: '← Mes challenges' })).toHaveAttribute('href', '/challenges')
+  })
+
   it('filters by direction from the URL', async () => {
     renderPage('?direction=RH')
     expect(await screen.findByText('Idée RH')).toBeInTheDocument()

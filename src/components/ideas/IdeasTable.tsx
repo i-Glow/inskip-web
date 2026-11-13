@@ -49,9 +49,9 @@ export default function IdeasTable({
     onSortChange({ key, dir: sort.key === key && sort.dir === 'asc' ? 'desc' : 'asc' })
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="w-full min-w-[64rem] divide-y divide-gray-200 text-sm">
-        <thead className="bg-gray-50 text-left">
+    <div className="min-h-[24rem] overflow-auto rounded-lg border border-gray-200 md:min-h-0 md:flex-1">
+      <table className="w-full min-w-[1100px] divide-y divide-gray-200 text-sm">
+        <thead className="text-left">
           <tr>
             {COLUMNS.map((c) => {
               const active = c.key === sort.key
@@ -60,7 +60,7 @@ export default function IdeasTable({
                   key={c.label}
                   scope="col"
                   aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-                  className={`px-3 py-2 font-medium ${
+                  className={`sticky top-0 z-10 bg-gray-50 px-3 py-2 font-medium ${
                     c.key === 'title' ? 'min-w-[20rem] lg:w-[38%]' : 'whitespace-nowrap'
                   }`}
                 >
@@ -77,7 +77,7 @@ export default function IdeasTable({
                 </th>
               )
             })}
-            <th scope="col" className="px-3 py-2 font-medium">
+            <th scope="col" className="sticky top-0 z-10 bg-gray-50 px-3 py-2 font-medium">
               Doublon
             </th>
           </tr>

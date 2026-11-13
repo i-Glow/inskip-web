@@ -28,6 +28,12 @@ describe('IdeasTable', () => {
     expect(screen.getByText('1 doublon')).toBeInTheDocument()
   })
 
+  it('keeps header cells sticky inside a scrolling container', () => {
+    render(<MemoryRouter><TableHarness /></MemoryRouter>)
+    for (const th of screen.getAllByRole('columnheader')) expect(th.className).toContain('sticky')
+    expect(screen.getByRole('table').parentElement?.className).toContain('overflow-auto')
+  })
+
   it('sorts when clicking a header and toggles direction', async () => {
     render(<MemoryRouter><TableHarness /></MemoryRouter>)
     const header = screen.getByRole('columnheader', { name: /Moy\. finale/ })
