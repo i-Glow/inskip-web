@@ -60,9 +60,9 @@ jobs:
       - name: Link project
         run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
       - name: Push migrations
-        run: npx supabase db push --remote
+        run: npx supabase db push --remote --yes
       - name: Deploy Edge Function
-        run: npx supabase functions deploy score-idea --project-ref "$SUPABASE_PROJECT_REF" --use-api
+        run: npx supabase functions deploy score-idea --remote="$SUPABASE_PROJECT_REF" --use-api --yes
 
   deploy-vercel:
     needs: [test, deploy-supabase]
