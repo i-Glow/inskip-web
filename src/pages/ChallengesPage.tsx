@@ -1,4 +1,3 @@
-// TODO: ChallengesPage page
 export default function ChallengesPage() {
-  return <div>ChallengesPage</div>
+  return <h1 className="text-xl font-semibold">Mes challenges</h1>
 }

@@ -1,4 +1,13 @@
-// TODO: layout: AppShell
+import { Outlet } from 'react-router-dom'
+import Header from './Header'
+
 export default function AppShell() {
-  return null
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <main className="mx-auto max-w-5xl p-6">
+        <Outlet />
+      </main>
+    </div>
+  )
 }
