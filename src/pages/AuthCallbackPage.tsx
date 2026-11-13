@@ -1,0 +1,4 @@
+// TODO: AuthCallbackPage page
+export default function AuthCallbackPage() {
+  return <div>AuthCallbackPage</div>
+}
