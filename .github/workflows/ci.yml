@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: https://example.supabase.co
+          VITE_SUPABASE_ANON_KEY: dummy-anon-key
+
+  deploy-supabase:
+    needs: test
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+    steps:
+      - name: Preflight
+        run: |
+          missing=0
+          for v in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD SUPABASE_PROJECT_REF; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Missing required secret/variable: $v (see README, section CI / déploiement)"
+              missing=1
+            fi
+          done
+          exit $missing
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Link project
+        run: npx supabase link --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Push migrations
+        run: npx supabase db push
+      - name: Deploy Edge Function
+        run: npx supabase functions deploy score-idea --project-ref "$SUPABASE_PROJECT_REF" --use-api
+
+  deploy-vercel:
+    needs: [test, deploy-supabase]
+    if: >-
+      always() &&
+      needs.test.result == 'success' &&
+      (needs.deploy-supabase.result == 'success' || needs.deploy-supabase.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+      VERCEL_CLI: vercel@65.15.0
+      IS_PROD: ${{ github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Preflight
+        run: |
+          missing=0
+          for v in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!v}" ]; then
+              echo "::error::Missing required secret/variable: $v (see README, section CI / déploiement)"
+              missing=1
+            fi
+          done
+          exit $missing
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Pull Vercel environment
+        run: |
+          if [ "$IS_PROD" = "true" ]; then ENV=production; else ENV=preview; fi
+          npx --yes "$VERCEL_CLI" pull --yes --environment="$ENV" --token="$VERCEL_TOKEN"
+      - name: Build
+        run: |
+          if [ "$IS_PROD" = "true" ]; then FLAG=--prod; else FLAG=; fi
+          npx --yes "$VERCEL_CLI" build $FLAG --token="$VERCEL_TOKEN"
+      - name: Deploy
+        run: |
+          if [ "$IS_PROD" = "true" ]; then FLAG=--prod; else FLAG=; fi
+          url=$(npx --yes "$VERCEL_CLI" deploy --prebuilt $FLAG --token="$VERCEL_TOKEN")
+          echo "Deployed: $url"
+          {
+            echo "### Vercel deployment ($( [ "$IS_PROD" = "true" ] && echo production || echo preview ))"
+            echo
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"
