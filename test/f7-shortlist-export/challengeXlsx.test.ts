@@ -18,6 +18,16 @@ describe('buildChallengeWorkbook', () => {
   const wb = buildChallengeWorkbook([x, y, d], scores)
   const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(wb.Sheets[wb.SheetNames[0]])
 
+  it('includes the estimated budget (text and €)', () => {
+    const z = makeIdea({ title: 'Z', budget_raw: '10 k€', budget_eur: 10000 })
+    const w = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+      buildChallengeWorkbook([z], []).Sheets['Évaluation'],
+    )
+    expect(CHALLENGE_XLSX_HEADERS).toContain('Budget estimé (texte)')
+    expect(CHALLENGE_XLSX_HEADERS).toContain('Budget estimé (€)')
+    expect(w[0]).toMatchObject({ 'Budget estimé (texte)': '10 k€', 'Budget estimé (€)': 10000 })
+  })
+
   it('excludes duplicates', () => {
     expect(rows.map((r) => r['Titre'])).toEqual(['X', 'Y'])
   })

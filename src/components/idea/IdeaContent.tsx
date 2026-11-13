@@ -1,4 +1,5 @@
 import type { Tables } from '../../lib/database.types'
+import { BUDGET_LABEL, displayBudget } from '../../lib/ideasList'
 
 function formatDate(idea: Tables<'ideas'>): string {
   if (idea.submitted_on) {
@@ -34,7 +35,7 @@ export default function IdeaContent({ idea }: { idea: Tables<'ideas'> }) {
           <Field label="Direction">{idea.direction}</Field>
           <Field label="Site">{idea.site}</Field>
           <Field label="Thème">{idea.theme}</Field>
-          <Field label="Budget">{idea.budget_raw}</Field>
+          <Field label={BUDGET_LABEL}>{displayBudget(idea.budget_raw)}</Field>
         </div>
         <Field label="Description">{idea.description}</Field>
         <Field label="Bénéfices attendus">{idea.expected_benefits}</Field>

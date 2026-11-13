@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { reorderShortlist, suggestShortlist, toggleShortlist } from '../../src/hooks/useShortlist'
+import { addIdeasToShortlist, reorderShortlist, suggestShortlist, toggleShortlist } from '../../src/hooks/useShortlist'
 import { resetSupabaseMock } from '../helpers/supabase'
 import { makeRawIdea, qb, routeTables } from './helpers'
 
@@ -37,6 +37,26 @@ describe('toggleShortlist', () => {
     await expect(toggleShortlist(makeRawIdea({ status: 'duplicate', duplicate_of: 'x' }))).rejects.toThrow(
       /doublon/,
     )
+    expect(ideas.update).not.toHaveBeenCalled()
+  })
+})
+
+describe('addIdeasToShortlist', () => {
+  it('appends ranks after the current max, in order', async () => {
+    const ideas = qb({ data: [{ shortlist_rank: 2 }, { shortlist_rank: 6 }] })
+    routeTables({ ideas })
+    await expect(addIdeasToShortlist('c1', ['x', 'y'])).resolves.toBe(2)
+    expect(ideas.update.mock.calls.map((c) => c[0])).toEqual([
+      { shortlisted: true, shortlist_rank: 7 },
+      { shortlisted: true, shortlist_rank: 8 },
+    ])
+    expect(ideas.eq.mock.calls.filter((c) => c[0] === 'id').map((c) => c[1])).toEqual(['x', 'y'])
+  })
+
+  it('does nothing for an empty selection', async () => {
+    const ideas = qb()
+    routeTables({ ideas })
+    await expect(addIdeasToShortlist('c1', [])).resolves.toBe(0)
     expect(ideas.update).not.toHaveBeenCalled()
   })
 })

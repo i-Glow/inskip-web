@@ -122,13 +122,13 @@ src/
     useIdea.ts
     useScores.ts                # read + debounced autosave
     useAiScoring.ts             # single + bulk with progress/retry
-    useShortlist.ts             # toggle, reorder, suggest
+    useShortlist.ts             # toggle, add several, reorder, suggest
   components/
     layout/ AppShell, Header, ProtectedRoute
     challenges/ ChallengeCard, NewChallengeUpload, EditableTitle
     ideas/ IdeasTable, IdeaFilters, StatusBadge, DuplicateBadge, BulkScoringBar
     idea/ IdeaContent, ScoringPanel, CriterionScoreRow, IdeaNav
-    shortlist/ ShortlistList, ExportButtons
+    shortlist/ ShortlistList, AddIdeasModal, ExportButtons
     ui/ Button, Input, Select, Textarea, Modal, Toast, ProgressBar, EmptyState
   pages/
     LoginPage.tsx               # /login

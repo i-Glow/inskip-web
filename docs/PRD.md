@@ -20,7 +20,7 @@ The tool will be reused for other clients' challenges, so nothing may be specifi
 
 | # | Goal | Measure of success |
 |---|------|--------------------|
-| G1 | All ideas in one place, filterable | Camille finds any idea or subset (direction, site, theme, status) in < 10 s |
+| G1 | All ideas in one place, filterable | Camille finds any idea or subset (direction, site, theme, status, budget) in < 10 s |
 | G2 | Scoring on the fixed grid | Every idea scored 1–5 on the same 4 criteria |
 | G3 | AI-assisted first pass | A proposed score + justification per criterion, editable by Camille (faked in V1) |
 | G4 | Duplicate detection | Exact duplicates flagged automatically at import |

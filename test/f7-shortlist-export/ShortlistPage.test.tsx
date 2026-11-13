@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import { Route, Routes } from 'react-router-dom'
 import { renderWithProviders } from '../helpers/render'
 import { makeIdea } from '../f3-ideas-list/helpers'
@@ -7,6 +7,7 @@ import { makeIdea } from '../f3-ideas-list/helpers'
 const suggest = vi.fn()
 const toggle = vi.fn()
 const reorder = vi.fn()
+const addIdeas = vi.fn()
 let ideas: ReturnType<typeof makeIdea>[] = []
 
 vi.mock('../../src/hooks/useIdeas', () => ({
@@ -19,6 +20,7 @@ vi.mock('../../src/hooks/useShortlist', () => ({
     toggleShortlist: { mutate: toggle },
     reorder: { mutate: reorder },
     suggest: { mutate: suggest, isPending: false },
+    addIdeas: { mutate: addIdeas, isPending: false },
   }),
 }))
 vi.mock('../../src/components/shortlist/ExportButtons', () => ({ default: () => <div>exports</div> }))
@@ -45,6 +47,7 @@ function shortlisted(n: number, unreviewed = 0) {
 
 beforeEach(() => {
   suggest.mockReset()
+  addIdeas.mockReset()
   ideas = []
 })
 
@@ -89,5 +92,57 @@ describe('ShortlistPage', () => {
     renderPage()
     fireEvent.click(screen.getAllByRole('button', { name: 'Retirer' })[0])
     expect(toggle).toHaveBeenCalledWith(ideas[0], expect.anything())
+  })
+
+  describe('Ajouter des idées', () => {
+    const mk = () => {
+      const sl = makeIdea({ external_id: 'S-1', title: 'Déjà', status: 'reviewed', shortlisted: true, shortlist_rank: 1 })
+      const dup = makeIdea({ external_id: 'D-1', title: 'Doublon', status: 'duplicate', duplicate_of: sl.id })
+      const low = makeIdea({ external_id: 'L-1', title: 'Faible', status: 'reviewed', finalAverage: 2 })
+      const none = makeIdea({ external_id: 'N-1', title: 'Sans note', status: 'new' })
+      const high = makeIdea({ external_id: 'H-1', title: 'Excellente idée', status: 'reviewed', finalAverage: 4.5 })
+      ideas = [sl, dup, low, none, high]
+    }
+
+    it('lists candidates sorted by final average desc, nulls last, without shortlisted or duplicates', () => {
+      mk()
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: 'Ajouter des idées' }))
+      const dialog = screen.getByRole('dialog')
+      const rows = within(dialog).getAllByRole('row').slice(1)
+      expect(rows.map((r) => within(r).getAllByRole('cell')[1].textContent)).toEqual(['H-1', 'L-1', 'N-1'])
+      expect(within(rows[0]).getByText('4,5')).toBeInTheDocument()
+      expect(within(rows[2]).getByText('—')).toBeInTheDocument()
+      expect(within(rows[2]).getByText('Non évaluée')).toBeInTheDocument()
+      expect(within(dialog).queryByText('Doublon')).toBeNull()
+      expect(within(dialog).queryByText('Déjà')).toBeNull()
+    })
+
+    it('searches by id or title', () => {
+      mk()
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: 'Ajouter des idées' }))
+      fireEvent.change(screen.getByLabelText('Rechercher une idée'), { target: { value: 'l-1' } })
+      expect(screen.getAllByRole('row')).toHaveLength(2)
+      fireEvent.change(screen.getByLabelText('Rechercher une idée'), { target: { value: 'excellente' } })
+      expect(screen.getByText('Excellente idée')).toBeInTheDocument()
+    })
+
+    it('adds the selection in display order, then closes and toasts', () => {
+      mk()
+      renderPage()
+      fireEvent.click(screen.getByRole('button', { name: 'Ajouter des idées' }))
+      expect(screen.getByRole('button', { name: 'Ajouter (0)' })).toBeDisabled()
+      fireEvent.click(screen.getByLabelText('Sélectionner L-1'))
+      fireEvent.click(screen.getByLabelText('Sélectionner H-1'))
+      fireEvent.click(screen.getByRole('button', { name: 'Ajouter (2)' }))
+      expect(addIdeas).toHaveBeenCalledWith(
+        { challengeId: 'c1', orderedIds: [ideas[4].id, ideas[2].id] },
+        expect.anything(),
+      )
+      const opts = addIdeas.mock.calls[0][1]
+      opts.onSuccess()
+      return screen.findByText('2 idée(s) ajoutée(s) à la shortlist')
+    })
   })
 })

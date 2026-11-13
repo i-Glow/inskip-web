@@ -2,6 +2,7 @@
 import { Document, Page, StyleSheet, Text, View, pdf } from '@react-pdf/renderer'
 import type { Tables } from '../database.types'
 import { CRITERIA } from '../criteria'
+import { displayBudget } from '../ideasList'
 import { effectiveScore, finalAverage, formatAverage } from '../scoring'
 
 type Idea = Tables<'ideas'>
@@ -30,6 +31,7 @@ export interface PdfRankingRow {
   rank: number
   title: string
   direction: string
+  budget: string
   scores: (number | null)[]
   average: number | null
 }
@@ -82,6 +84,7 @@ export function buildShortlistPdfModel(
       rank: i + 1,
       title: r.idea.title,
       direction: orDash(r.idea.direction),
+      budget: displayBudget(r.idea.budget_raw),
       scores: r.criteria.map((c) => c.score),
       average: r.average,
     })),
@@ -93,7 +96,7 @@ export function buildShortlistPdfModel(
       theme: orDash(r.idea.theme),
       description: orDash(r.idea.description),
       expectedBenefits: orDash(r.idea.expected_benefits),
-      budget: orDash(r.idea.budget_raw),
+      budget: displayBudget(r.idea.budget_raw),
       criteria: r.criteria,
       average: r.average,
     })),
@@ -110,8 +113,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', borderBottom: '1pt solid #e5e7eb', paddingVertical: 4 },
   head: { fontWeight: 'bold', backgroundColor: '#f3f4f6' },
   cRank: { width: '6%' },
-  cTitle: { width: '30%', paddingRight: 4 },
-  cDir: { width: '18%', paddingRight: 4 },
+  cTitle: { width: '26%', paddingRight: 4 },
+  cDir: { width: '14%', paddingRight: 4 },
+  cBudget: { width: '12%', paddingRight: 4 },
   cScore: { width: '9%', textAlign: 'center' },
   muted: { color: '#6b7280' },
 })
@@ -134,6 +138,7 @@ export function ShortlistDocument({ model }: { model: ShortlistPdfModel }) {
           <Text style={styles.cRank}>Rang</Text>
           <Text style={styles.cTitle}>Titre</Text>
           <Text style={styles.cDir}>Direction</Text>
+          <Text style={styles.cBudget}>Budget estimé</Text>
           {model.criteriaLabels.map((l, i) => (
             <Text key={l} style={styles.cScore}>
               {short[i] ?? l}
@@ -146,6 +151,7 @@ export function ShortlistDocument({ model }: { model: ShortlistPdfModel }) {
             <Text style={styles.cRank}>{r.rank}</Text>
             <Text style={styles.cTitle}>{r.title}</Text>
             <Text style={styles.cDir}>{r.direction}</Text>
+            <Text style={styles.cBudget}>{r.budget}</Text>
             {r.scores.map((s, i) => (
               <Text key={i} style={styles.cScore}>
                 {s ?? DASH}
@@ -167,7 +173,7 @@ export function ShortlistDocument({ model }: { model: ShortlistPdfModel }) {
           <Text>{p.description}</Text>
           <Text style={styles.h2}>Bénéfices attendus</Text>
           <Text>{p.expectedBenefits}</Text>
-          <Text style={styles.h2}>Budget</Text>
+          <Text style={styles.h2}>Budget estimé</Text>
           <Text>{p.budget}</Text>
           <Text style={styles.h2}>Évaluation</Text>
           {p.criteria.map((c) => (

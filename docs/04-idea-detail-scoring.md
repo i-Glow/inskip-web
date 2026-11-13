@@ -8,7 +8,7 @@
 
 Two-column layout: idea content on the left, scoring panel on the right.
 
-- Left: title, id, submission date, author (first + last name), direction, site, theme, description, expected benefits, budget (raw text as submitted).
+- Left: title, id, submission date, author (first + last name), direction, site, theme, description, expected benefits, "Budget estimé" (raw text as submitted, "Non renseigné" if empty).
 - Right, for each of the 4 criteria:
   - AI score (1–5) and AI justification, read-only, labeled "Suggestion IA";
   - final score (1–5 selector) and final justification (textarea), pre-filled from the AI suggestion, editable;

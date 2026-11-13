@@ -18,6 +18,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { IdeaListItem } from '../../lib/ideasList'
+import { BUDGET_LABEL, displayBudget } from '../../lib/ideasList'
 import { formatAverage } from '../../lib/scoring'
 import StatusBadge from '../ideas/StatusBadge'
 
@@ -65,11 +66,14 @@ function Row({
       <div className="min-w-0 flex-1">
         <Link
           to={`/challenges/${challengeId}/ideas/${idea.id}`}
-          className="font-medium text-indigo-700 hover:underline"
+          className="font-medium break-words whitespace-normal text-indigo-700 hover:underline"
         >
           {idea.title}
         </Link>
         <p className="text-xs text-gray-600">{idea.direction || 'Direction non renseignée'}</p>
+        <p className="text-xs text-gray-600">
+          {BUDGET_LABEL} : {displayBudget(idea.budget_raw)}
+        </p>
       </div>
       <span className="text-sm font-semibold">{formatAverage(idea.finalAverage)}</span>
       <StatusBadge status={idea.status} />

@@ -24,6 +24,17 @@ const items = [
 ]
 
 describe('ShortlistList', () => {
+  it('shows the estimated budget on each row', () => {
+    const rows = [
+      makeIdea({ title: 'Avec', budget_raw: '12 k€', shortlisted: true, shortlist_rank: 1 }),
+      makeIdea({ title: 'Sans', shortlisted: true, shortlist_rank: 2 }),
+    ]
+    renderWithProviders(<ShortlistList challengeId="c1" items={rows} onReorder={vi.fn()} onRemove={vi.fn()} />)
+    expect(screen.getByText('Budget estimé : 12 k€')).toBeInTheDocument()
+    expect(screen.getByText('Budget estimé : Non renseigné')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Avec' }).className).toContain('whitespace-normal')
+  })
+
   it('renders in order with an unreviewed badge', () => {
     renderWithProviders(<ShortlistList challengeId="c1" items={items} onReorder={vi.fn()} onRemove={vi.fn()} />)
     const links = screen.getAllByRole('link').map((l) => l.textContent)

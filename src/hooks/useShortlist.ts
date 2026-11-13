@@ -37,6 +37,25 @@ export async function toggleShortlist(idea: ShortlistableIdea): Promise<{ shortl
   return { shortlisted: true }
 }
 
+/** Appends the ideas to the end of the shortlist, in the given order. */
+export async function addIdeasToShortlist(challengeId: string, orderedIds: string[]): Promise<number> {
+  if (orderedIds.length === 0) return 0
+  const { data, error: rankError } = await supabase
+    .from('ideas')
+    .select('shortlist_rank')
+    .eq('challenge_id', challengeId)
+    .eq('shortlisted', true)
+  if (rankError) throw new Error('Impossible de modifier la shortlist.')
+  const max = Math.max(0, ...(data ?? []).map((r) => r.shortlist_rank ?? 0))
+  const results = await Promise.all(
+    orderedIds.map((id, i) =>
+      supabase.from('ideas').update({ shortlisted: true, shortlist_rank: max + i + 1 }).eq('id', id),
+    ),
+  )
+  if (results.some((r) => r.error)) throw new Error('Impossible de modifier la shortlist.')
+  return orderedIds.length
+}
+
 /** Writes ranks 1..n following `orderedIds`. */
 export async function reorderShortlist(_challengeId: string, orderedIds: string[]): Promise<void> {
   const results = await Promise.all(
@@ -111,6 +130,11 @@ export function useShortlist() {
     ])
   return {
     toggleShortlist: useMutation({ mutationFn: toggleShortlist, onSuccess: invalidate }),
+    addIdeas: useMutation({
+      mutationFn: (v: { challengeId: string; orderedIds: string[] }) =>
+        addIdeasToShortlist(v.challengeId, v.orderedIds),
+      onSuccess: invalidate,
+    }),
     reorder: useMutation({
       mutationFn: (v: { challengeId: string; orderedIds: string[] }) =>
         reorderShortlist(v.challengeId, v.orderedIds),

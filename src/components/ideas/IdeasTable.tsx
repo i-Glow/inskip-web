@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import type { IdeaListItem, IdeaSort, SortKey } from '../../lib/ideasList'
+import { BUDGET_LABEL, displayBudget, type IdeaListItem, type IdeaSort, type SortKey } from '../../lib/ideasList'
 import { formatAverage } from '../../lib/scoring'
 import StatusBadge from './StatusBadge'
 import DuplicateBadge from './DuplicateBadge'
@@ -21,7 +21,7 @@ const COLUMNS: { key: SortKey | null; label: string; numeric?: boolean }[] = [
   { key: 'direction', label: 'Direction' },
   { key: 'site', label: 'Site' },
   { key: 'theme', label: 'Thème' },
-  { key: 'budget_eur', label: 'Budget', numeric: true },
+  { key: 'budget_eur', label: BUDGET_LABEL, numeric: true },
   { key: 'aiAverage', label: 'Moy. IA', numeric: true },
   { key: 'finalAverage', label: 'Moy. finale', numeric: true },
   { key: 'status', label: 'Statut' },
@@ -50,7 +50,7 @@ export default function IdeasTable({
 
   return (
     <div className="overflow-x-auto rounded-lg border border-gray-200">
-      <table className="min-w-full divide-y divide-gray-200 text-sm">
+      <table className="w-full min-w-[64rem] divide-y divide-gray-200 text-sm">
         <thead className="bg-gray-50 text-left">
           <tr>
             {COLUMNS.map((c) => {
@@ -60,7 +60,9 @@ export default function IdeasTable({
                   key={c.label}
                   scope="col"
                   aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
-                  className="px-3 py-2 font-medium whitespace-nowrap"
+                  className={`px-3 py-2 font-medium ${
+                    c.key === 'title' ? 'min-w-[20rem] lg:w-[38%]' : 'whitespace-nowrap'
+                  }`}
                 >
                   <button
                     type="button"
@@ -84,7 +86,7 @@ export default function IdeasTable({
           {items.map((i) => (
             <tr key={i.id} className="hover:bg-gray-50">
               <td className="px-3 py-2 whitespace-nowrap text-gray-600">{i.external_id}</td>
-              <td className="max-w-xs px-3 py-2">
+              <td className="min-w-[20rem] px-3 py-2 break-words whitespace-normal">
                 <Link
                   to={`/challenges/${challengeId}/ideas/${i.id}${search}`}
                   className="font-medium text-indigo-700 hover:underline"
@@ -92,12 +94,12 @@ export default function IdeasTable({
                   {i.title}
                 </Link>
               </td>
-              <td className="px-3 py-2">{i.direction ?? '—'}</td>
-              <td className="px-3 py-2">{i.site ?? '—'}</td>
-              <td className="px-3 py-2">{i.theme ?? '—'}</td>
-              <td className="px-3 py-2 whitespace-nowrap">{i.budget_raw || '—'}</td>
-              <td className="px-3 py-2 text-right">{formatAverage(i.aiAverage)}</td>
-              <td className="px-3 py-2 text-right">{formatAverage(i.finalAverage)}</td>
+              <td className="px-3 py-2 whitespace-nowrap">{i.direction ?? '—'}</td>
+              <td className="px-3 py-2 whitespace-nowrap">{i.site ?? '—'}</td>
+              <td className="px-3 py-2 whitespace-nowrap">{i.theme ?? '—'}</td>
+              <td className="px-3 py-2 whitespace-nowrap">{displayBudget(i.budget_raw)}</td>
+              <td className="px-3 py-2 text-right whitespace-nowrap">{formatAverage(i.aiAverage)}</td>
+              <td className="px-3 py-2 text-right whitespace-nowrap">{formatAverage(i.finalAverage)}</td>
               <td className="px-3 py-2">
                 <StatusBadge status={i.status} />
               </td>

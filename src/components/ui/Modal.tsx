@@ -4,9 +4,11 @@ interface ModalProps {
   title: string
   onClose: () => void
   children: ReactNode
+  /** Wider dialog for tables/lists. */
+  wide?: boolean
 }
 
-export default function Modal({ title, onClose, children }: ModalProps) {
+export default function Modal({ title, onClose, children, wide }: ModalProps) {
   const titleId = useId()
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export default function Modal({ title, onClose, children }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+        className={`w-full ${wide ? 'max-w-3xl' : 'max-w-md'} rounded-lg bg-white p-6 shadow-xl`}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id={titleId} className="mb-3 text-lg font-semibold">

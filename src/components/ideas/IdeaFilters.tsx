@@ -70,6 +70,36 @@ export default function IdeaFilters({ items, filters, onChange }: IdeaFiltersPro
         onChange={(statuses) => set({ statuses })}
       />
       <label className="flex items-center gap-1 text-sm">
+        Budget min (€)
+        <input
+          type="number"
+          min={0}
+          aria-label="Budget min (€)"
+          className="w-28 rounded-md border border-gray-300 px-2 py-2"
+          value={filters.budgetMin ?? ''}
+          onChange={(e) => set({ budgetMin: e.target.value === '' ? null : Number(e.target.value) })}
+        />
+      </label>
+      <label className="flex items-center gap-1 text-sm">
+        Budget max (€)
+        <input
+          type="number"
+          min={0}
+          aria-label="Budget max (€)"
+          className="w-28 rounded-md border border-gray-300 px-2 py-2"
+          value={filters.budgetMax ?? ''}
+          onChange={(e) => set({ budgetMax: e.target.value === '' ? null : Number(e.target.value) })}
+        />
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={filters.budgetIncludeUnknown}
+          onChange={(e) => set({ budgetIncludeUnknown: e.target.checked })}
+        />
+        Inclure budgets non renseignés
+      </label>
+      <label className="flex items-center gap-1 text-sm">
         Trier par
         <select
           aria-label="Trier par"

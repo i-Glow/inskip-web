@@ -51,6 +51,9 @@ describe('buildShortlistPdfModel', () => {
   it('uses final values with fallbacks per criterion', () => {
     const p = m.pages[1]
     expect(p.budget).toBe('5 k€')
+    expect(m.ranking[1].budget).toBe('5 k€')
+    expect(m.ranking[0].budget).toBe('10 k€')
+    expect(buildShortlistPdfModel({ title: 'D' }, [{ ...b, budget_raw: null }], []).pages[0].budget).toBe('Non renseigné')
     expect(p.criteria[0]).toMatchObject({ label: 'Impact', score: 4, justification: 'Final A' })
     expect(p.criteria[1]).toMatchObject({ score: 3, justification: 'Repli' })
     expect(p.criteria[2]).toMatchObject({ score: null, justification: '' })

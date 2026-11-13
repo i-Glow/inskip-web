@@ -24,8 +24,8 @@ describe('buildIdeasWorkbook', () => {
     expect(rows[1]['Statut']).toBe('Doublon')
     expect(rows[2]).toMatchObject({
       Titre: 'Solaire',
-      'Budget (texte)': '10 k€',
-      'Budget (€)': 10000,
+      'Budget estimé (texte)': '10 k€',
+      'Budget estimé (€)': 10000,
       'Moyenne IA': 3.5,
       'Moyenne finale': 4,
       Statut: 'Évaluée',
@@ -35,7 +35,7 @@ describe('buildIdeasWorkbook', () => {
     const wb = buildIdeasWorkbook([])
     const aoa = XLSX.utils.sheet_to_json<string[]>(wb.Sheets[wb.SheetNames[0]], { header: 1 })
     expect(aoa[0]).toEqual([
-      'Id', 'Titre', 'Direction', 'Site', 'Thème', 'Budget (texte)', 'Budget (€)',
+      'Id', 'Titre', 'Direction', 'Site', 'Thème', 'Budget estimé (texte)', 'Budget estimé (€)',
       'Moyenne IA', 'Moyenne finale', 'Statut', 'Doublon de', 'Shortlist',
     ])
   })

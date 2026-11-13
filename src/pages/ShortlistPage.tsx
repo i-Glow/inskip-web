@@ -6,6 +6,7 @@ import { useToast } from '../components/ui/useToast'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import Modal from '../components/ui/Modal'
+import AddIdeasModal from '../components/shortlist/AddIdeasModal'
 import ShortlistList from '../components/shortlist/ShortlistList'
 import ExportButtons from '../components/shortlist/ExportButtons'
 
@@ -14,8 +15,9 @@ export default function ShortlistPage() {
   const toast = useToast()
   const challenge = useChallenge(id)
   const ideas = useIdeas(id)
-  const { toggleShortlist, reorder, suggest } = useShortlist()
+  const { toggleShortlist, reorder, suggest, addIdeas } = useShortlist()
   const [confirming, setConfirming] = useState(false)
+  const [adding, setAdding] = useState(false)
 
   const all = ideas.data
   const shortlisted = useMemo(
@@ -39,6 +41,18 @@ export default function ShortlistPage() {
       },
     )
   }
+
+  const onAdd = (orderedIds: string[]) =>
+    addIdeas.mutate(
+      { challengeId: id!, orderedIds },
+      {
+        onSuccess: () => {
+          setAdding(false)
+          toast.show(`${orderedIds.length} idée(s) ajoutée(s) à la shortlist`, 'success')
+        },
+        onError: (e) => toast.show(e.message, 'error'),
+      },
+    )
 
   const onReorder = (orderedIds: string[]) =>
     reorder.mutate({ challengeId: id!, orderedIds }, { onError: (e) => toast.show(e.message, 'error') })
@@ -68,6 +82,9 @@ export default function ShortlistPage() {
             onClick={() => (shortlisted.length > 0 ? setConfirming(true) : runSuggest())}
           >
             Suggérer
+          </Button>
+          <Button type="button" disabled={!all} onClick={() => setAdding(true)}>
+            Ajouter des idées
           </Button>
           <ExportButtons challengeTitle={title} ideas={all ?? []} />
         </div>
@@ -100,6 +117,15 @@ export default function ShortlistPage() {
             onRemove={onRemove}
           />
         ))}
+
+      {adding && all && (
+        <AddIdeasModal
+          ideas={all}
+          pending={addIdeas.isPending}
+          onClose={() => setAdding(false)}
+          onAdd={onAdd}
+        />
+      )}
 
       {confirming && (
         <Modal title="Remplacer la shortlist ?" onClose={() => setConfirming(false)}>

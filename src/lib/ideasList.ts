@@ -32,6 +32,10 @@ export interface IdeaFilters {
   statuses: string[]
   q: string
   showDuplicates: boolean
+  budgetMin: number | null
+  budgetMax: number | null
+  /** Keep ideas without a parsed budget when a bound is set. */
+  budgetIncludeUnknown: boolean
   sort: IdeaSort
 }
 
@@ -46,6 +50,9 @@ export const DEFAULT_FILTERS: IdeaFilters = {
   statuses: [],
   q: '',
   showDuplicates: false,
+  budgetMin: null,
+  budgetMax: null,
+  budgetIncludeUnknown: false,
   sort: DEFAULT_SORT,
 }
 
@@ -70,6 +77,19 @@ const SORT_KEYS: SortKey[] = [
   'shortlisted',
 ]
 
+export const BUDGET_LABEL = 'Budget estimé'
+
+/** The budget as submitted, or "Non renseigné" when empty. */
+export function displayBudget(raw: string | null | undefined): string {
+  return raw && raw.trim() ? raw : EMPTY_LABEL
+}
+
+function parseBound(v: string | null): number | null {
+  if (v == null || v.trim() === '') return null
+  const n = Number(v.replace(',', '.'))
+  return Number.isFinite(n) ? n : null
+}
+
 export function parseFilters(params: URLSearchParams): IdeaFilters {
   const key = params.get('sort') as SortKey | null
   const dir = params.get('dir')
@@ -80,6 +100,9 @@ export function parseFilters(params: URLSearchParams): IdeaFilters {
     statuses: params.getAll('status'),
     q: params.get('q') ?? '',
     showDuplicates: params.get('dup') === '1',
+    budgetMin: parseBound(params.get('bmin')),
+    budgetMax: parseBound(params.get('bmax')),
+    budgetIncludeUnknown: params.get('bnull') === '1',
     sort: {
       key: key && SORT_KEYS.includes(key) ? key : DEFAULT_SORT.key,
       dir: dir === 'desc' ? 'desc' : 'asc',
@@ -95,6 +118,9 @@ export function serializeFilters(f: IdeaFilters): URLSearchParams {
   f.statuses.forEach((v) => p.append('status', v))
   if (f.q) p.set('q', f.q)
   if (f.showDuplicates) p.set('dup', '1')
+  if (f.budgetMin != null) p.set('bmin', String(f.budgetMin))
+  if (f.budgetMax != null) p.set('bmax', String(f.budgetMax))
+  if (f.budgetIncludeUnknown) p.set('bnull', '1')
   if (f.sort.key !== DEFAULT_SORT.key) p.set('sort', f.sort.key)
   if (f.sort.dir !== DEFAULT_SORT.dir) p.set('dir', f.sort.dir)
   return p
@@ -118,6 +144,14 @@ export function applyFilters(items: IdeaListItem[], f: IdeaFilters): IdeaListIte
     if (!matchesFacet(f.sites, i.site)) return false
     if (!matchesFacet(f.themes, i.theme)) return false
     if (f.statuses.length > 0 && !f.statuses.includes(i.status)) return false
+    if (f.budgetMin != null || f.budgetMax != null) {
+      if (i.budget_eur == null) {
+        if (!f.budgetIncludeUnknown) return false
+      } else {
+        if (f.budgetMin != null && i.budget_eur < f.budgetMin) return false
+        if (f.budgetMax != null && i.budget_eur > f.budgetMax) return false
+      }
+    }
     if (q && !normalizeText(`${i.title} ${i.description}`).includes(q)) return false
     return true
   })
@@ -184,3 +218,19 @@ export const STATUS_OPTIONS: { value: IdeaListItem['status']; label: string }[] 
   { value: 'reviewed', label: 'Évaluée' },
   { value: 'duplicate', label: 'Doublon' },
 ]
+
+/** Candidates: not shortlisted, not duplicates; final average desc, nulls last. */
+export function addCandidates(ideas: IdeaListItem[]): IdeaListItem[] {
+  return ideas
+    .filter((i) => !i.shortlisted && i.status !== 'duplicate' && !i.duplicate_of)
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const x = a.item.finalAverage
+      const y = b.item.finalAverage
+      if (x == null && y == null) return a.index - b.index
+      if (x == null) return 1
+      if (y == null) return -1
+      return y - x || a.index - b.index
+    })
+    .map((k) => k.item)
+}

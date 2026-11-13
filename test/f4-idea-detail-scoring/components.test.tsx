@@ -71,6 +71,12 @@ describe('IdeaContent', () => {
     expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
     expect(screen.getByText('environ 10k')).toBeInTheDocument()
     expect(screen.getByText('Gain de temps')).toBeInTheDocument()
+    expect(screen.getByText('Budget estimé')).toBeInTheDocument()
+  })
+
+  it('shows "Non renseigné" when the budget is empty', () => {
+    renderWithProviders(<IdeaContent idea={makeRawIdea({ budget_raw: null })} />)
+    expect(screen.getByText('Budget estimé').nextSibling).toHaveTextContent('Non renseigné')
   })
 })
 
