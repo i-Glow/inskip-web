@@ -16,6 +16,26 @@ npm run dev
 
 Other scripts: `npm run build`, `npm run lint`.
 
+## Tests
+
+```bash
+npm test          # vitest run (once)
+npm run test:watch
+```
+
+Vitest + React Testing Library + jsdom. All tests live under `test/`, never in `src/`:
+
+```
+test/
+  setup.ts            jest-dom matchers + cleanup
+  fixtures/           sample files (CSV, ...)
+  helpers/            supabase mock, render-with-providers
+  f1-auth/            one folder per feature, named fNN-<slug> after docs/NN-<slug>.md
+  f2-challenge-upload/
+```
+
+Supabase is always mocked (`vi.mock` of `src/lib/supabase`, see `test/helpers/supabase.ts`); tests never need `.env`. `tsc -b` typechecks the tests via `tsconfig.test.json`.
+
 ## Structure
 
 ```

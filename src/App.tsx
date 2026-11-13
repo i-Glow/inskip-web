@@ -9,12 +9,14 @@ import ChallengesPage from './pages/ChallengesPage'
 import IdeasPage from './pages/IdeasPage'
 import IdeaDetailPage from './pages/IdeaDetailPage'
 import ShortlistPage from './pages/ShortlistPage'
+import { ToastProvider } from './components/ui/Toast'
 
 const queryClient = new QueryClient()
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <ToastProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -32,6 +34,7 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
+      </ToastProvider>
     </QueryClientProvider>
   )
 }
